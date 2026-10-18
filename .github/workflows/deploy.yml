@@ -15,9 +15,20 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
-          rsync -az --delete \
-            --exclude '.git*' --exclude '.github' --exclude 'deploy/' --exclude 'README.md' \
-            -e "ssh -i ~/.ssh/deploy_key" ./ "$SSH_USER@$SSH_HOST:/var/www/logispotio.ru/"
+          # Соединения из-за рубежа до RU-сервера иногда теряются, поэтому повторяем
+          for i in 1 2 3 4 5; do
+            ssh-keyscan -T 15 -t ed25519 "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+            [ -s ~/.ssh/known_hosts ] && break
+            echo "ssh-keyscan: попытка $i не удалась, повтор"; sleep 5
+          done
+          [ -s ~/.ssh/known_hosts ] || { echo "Сервер не ответил на ssh-keyscan"; exit 1; }
+          for i in 1 2 3; do
+            rsync -az --delete --timeout=60 \
+              --exclude '.git*' --exclude '.github' --exclude 'deploy/' --exclude 'README.md' \
+              -e "ssh -i $HOME/.ssh/deploy_key -o ConnectTimeout=20 -o ServerAliveInterval=15" \
+              ./ "$SSH_USER@$SSH_HOST:/var/www/logispotio.ru/" && exit 0
+            echo "rsync: попытка $i не удалась, повтор"; sleep 10
+          done
+          exit 1
