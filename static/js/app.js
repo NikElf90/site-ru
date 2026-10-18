@@ -151,9 +151,9 @@
       },
       pricing: {
         eyebrow: 'PRICE',
-        title: 'Start with 14 days free. Then 1,900 ₽ per seat, per month.',
+        title: 'Start with 14 days free. Then 1,900 ₽ + VAT per seat, per month.',
         sub: 'Everything included. No request limits.',
-        plan: 'Per seat', price: '14 days free', priceOld: '1 900 ₽', per: 'then 1,900 ₽ / seat / month',
+        plan: 'Per seat', price: '14 days free', priceOld: '1 900 ₽', per: 'then 1,900 ₽ + 22% VAT / seat / month',
         features: [
           'Everything included — no request limits, no token limits.',
           'Mailbox reading, forwarding addresses and team work on every seat.',
@@ -306,12 +306,12 @@
           },
           "pricing": {
                 "eyebrow": "ЦЕНА",
-                "title": "Начните с 14 дней бесплатно. Дальше 1 900 ₽ за место в месяц.",
+                "title": "Начните с 14 дней бесплатно. Дальше 1 900 ₽ + НДС за место в месяц.",
                 "sub": "Всё включено. Без лимитов на количество запросов.",
                 "plan": "За место",
                 "price": "14 дней бесплатно",
                 "priceOld": "1 900 ₽",
-                "per": "затем 1 900 ₽ / место / месяц",
+                "per": "затем 1 900 ₽ + НДС 22% / место / месяц",
                 "features": [
                       "Всё включено — без лимитов на запросы и без лимитов на токены.",
                       "Чтение почты, адреса для пересылки и командная работа на каждом месте.",
