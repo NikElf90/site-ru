@@ -15,11 +15,17 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
           mkdir -p ~/.ssh
-          # Ключ, скопированный из консоли, часто приходит с лишними пробелами и \r — чистим
-          printf '%s\n' "$SSH_KEY" | tr -d '\r' \
-            | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e '/^$/d' > ~/.ssh/deploy_key
+          # Ключ из консоли может прийти одной строкой или с лишними пробелами —
+          # собираем его заново: заголовок, тело по 70 символов, концовка
+          body=$(printf '%s' "$SSH_KEY" | tr -d '\r' \
+            | sed -e 's/-----BEGIN OPENSSH PRIVATE KEY-----//' -e 's/-----END OPENSSH PRIVATE KEY-----//' \
+            | tr -d ' \t\n')
+          {
+            echo "-----BEGIN OPENSSH PRIVATE KEY-----"
+            printf '%s\n' "$body" | fold -w 70
+            echo "-----END OPENSSH PRIVATE KEY-----"
+          } > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          echo "Ключ: $(wc -l < ~/.ssh/deploy_key) строк, первая: $(head -1 ~/.ssh/deploy_key)"
           ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null || { echo "SSH_KEY повреждён — скопируй ключ заново"; exit 1; }
           # Соединения из-за рубежа до RU-сервера иногда теряются, поэтому повторяем
           for i in 1 2 3 4 5; do
