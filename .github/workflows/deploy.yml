@@ -15,8 +15,12 @@ jobs:
           SSH_USER: ${{ secrets.SSH_USER }}
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
+          # Ключ, скопированный из консоли, часто приходит с лишними пробелами и \r — чистим
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' \
+            | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e '/^$/d' > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+          echo "Ключ: $(wc -l < ~/.ssh/deploy_key) строк, первая: $(head -1 ~/.ssh/deploy_key)"
+          ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null || { echo "SSH_KEY повреждён — скопируй ключ заново"; exit 1; }
           # Соединения из-за рубежа до RU-сервера иногда теряются, поэтому повторяем
           for i in 1 2 3 4 5; do
             ssh-keyscan -T 15 -t ed25519 "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
